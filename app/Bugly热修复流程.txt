@@ -1,0 +1,75 @@
+1.
+  classpath "com.tencent.bugly:tinker-support:1.1.5"
+  implementation 'com.tencent.bugly:crashreport_upgrade:1.3.6'
+  implementation 'com.tencent.tinker:tinker-android-lib:1.9.9'
+
+
+2.
+   multiDexEnabled true
+   implementation "com.android.support:multidex:1.0.3" // 多dex配置
+
+3.自动打包
+  signingConfigs {
+          release {
+              try {
+                  storeFile file("./keystore/buglydemo.jks")
+                  storePassword "buglydemo"
+                  keyAlias "buglydemo"
+                  keyPassword "buglydemo"
+              } catch (ex) {
+                  throw new InvalidUserDataException(ex.toString())
+              }
+          }
+      }
+      buildTypes {
+              release {
+                  minifyEnabled true
+                  signingConfig signingConfigs.release
+                  proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+              }
+          }
+4.
+  // 依赖插件脚本
+  apply from: 'tinker-support.gradle'
+复制:
+tinker-support.gradle文件
+SampleApplicationLike文件
+SampleApplication文件
+
+
+5.manifest：
+    <!--Bugly升级SDK权限配置开始-->
+      <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+      <uses-permission android:name="android.permission.INTERNET"/>
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+      <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/> <!-- <uses-permission android:name="android.permission.GET_TASKS" /> -->
+ <!-- Bugly升级SDK配置开始  -->
+        <activity
+            android:name="com.tencent.bugly.beta.ui.BetaActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|locale"
+            android:theme="@android:style/Theme.Translucent"/>
+
+
+        <!--API 24以上配置-->
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.tencent.bugly.hotfix.fileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+
+        <!-- Bugly升级SDK配置结束-->
+
+6.so文件 否则补丁应用失败
+7.
+a)在tinker-support.gradle文件中修改tinkId生成基准包  安装运行
+b)在tinker-support.gradle文件中修改baseApkDir、修改tinkId、bug已修复， 生成补丁
+c)停一会 在腾讯bugly上 上传补丁并下发
+d)停一会(这个时间感觉有点长)  重启app  会提正在下载补丁 ，成功后，提示是否重启
+e)重启 bug已修复
